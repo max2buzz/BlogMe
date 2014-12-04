@@ -2,14 +2,17 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/', function(req, res) {
-	res.json({
-		posts:"all"
-	});
+	//Get All the posts
+	
 })
-.get('/post' , function(req, res) {
-	res.json({
-		posts:"one"
-	});
+.get('/post/:id' , function(req, res) {
+	//Grab the post with that ID and return it
+	res.json();
+})
+.get('/post/tag/:hashtag' , function(req , res) {
+	//Grab The post by Hashtags
+
+
 });
 
 
