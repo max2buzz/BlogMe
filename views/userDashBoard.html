@@ -1,0 +1,149 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{user.firstName}} | Dashboard</title>
+    <link href="/css/toastr.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/normalize.css">
+    <link rel="stylesheet" href="/css/foundation.min.css">
+</head>
+<style>
+body{
+    color: #242628;
+
+}
+.main {
+    margin-top: 20px;
+}
+.sidebar {
+    background-color: #FAFAFA;
+}
+
+.title{
+    font-size: 2.5rem;
+    line-height: 1.2em;
+    letter-spacing: -1px;
+    text-indent: -2px;
+    font-weight: bold;
+    padding-top: 0;
+    margin: 0px 0px;
+    border: none;
+}
+.meta{
+    color: #9EABB3;
+    font-size: 1rem;
+    margin: 0px 0px;
+}
+
+a.userEmail{
+    color: inherit;
+    text-decoration: none;
+}
+
+a.userEmail:hover{
+    text-decoration: underline;
+}
+
+.render p{
+    font-size: 1.4rem;
+    line-height: 1.2em;
+}
+
+.readMore {
+    font-size: 0.7rem;
+}
+
+.postBox{
+    border-bottom: #d0e2ea 1px dashed;
+}
+
+</style>
+
+<body>
+
+    <nav class="top-bar " data-topbar>
+        <ul class="title-area">
+            <li class="name">
+                <h1>
+                    <a href="#">Blog
+                        <strong>Me</strong>
+                    </a>
+                </h1>
+            </li>
+            <li class="toggle-topbar menu-icon">
+                <a href="#">
+                    <span>Menu</span>
+                </a>
+            </li>
+        </ul>
+
+        <section class="top-bar-section">
+            <!-- Right Nav Section -->
+            <ul class="right">
+                <li>
+                    <a href="/user/new"><strong>CREATE</strong></a>
+                </li>
+                <li>
+                    <a href="/user/profile">Profile</a>
+                </li>
+                <li>
+                    <a href="contact">Trending</a>
+                </li>
+                <li>
+                    <a href="/user/logout">Logout</a>
+                </li>
+            </ul>
+
+        </section>
+    </nav>
+
+    <div class="main">
+
+        <aside class="sidebar large-4 medium-12 small-12 columns">
+            <h4>Hello, {{user.firstName}} {{user.lastName}}</h4>
+            <h4>From  {{user.location}}</h4>
+            <h4> Contact: {{user._id}}</h4>
+            <a href="/user/new" class="button">Create a new story</a>
+        </aside>
+
+        <div class="postContainer large-8 medium-12 small-12 columns">
+            {% for post in posts %} 
+            {% if loop.first %}<div class="postHolder">{% endif %}
+                <article class="postBox">
+                    <a href="/user/p/{{post._id.toString()}}" class="postLink"><h2 class="title">{{post.title|title}}</h2></a>
+                    <div class="meta">
+                    By <a href="/user/{{post.publishedBy.email}}" class="userEmail">{{post.publishedBy.firstName}} {{post.publishedBy.lastName}}</a> •     <span class="datePublished">{{post.publishedAt|date('d M Y')}}</span> 
+                     •  <span class="numberOfComments">{{post.comments.length}} comments</span>
+                    </div> 
+                    <section class="render" data="{post._id.toString()}">
+                        {{post.body}}
+                        <!-- <a href="/user/p/" class="readMore">READ MORE</a> -->     
+                    </section>
+                </article>
+            {% if loop.last %}</div>{% endif %} 
+            {% endfor %}
+        </div>
+   
+
+    </div>
+    <script src="/js/vendor/jquery.js"></script>
+    <script src="/js/foundation.min.js"></script>
+    <script src="/js/foundation/foundation.reveal.js"></script>
+    <script src="/js/toastr.min.js"></script>
+    <script>
+        $(document).foundation();
+    </script>
+    <script>
+    (function() {
+        $('.render').each(function(index, el) {
+            var curr = $(el).html().trim();
+            $(el).html(curr);
+            var newFinal = $(el).text().split(' ').slice(0,39).join(' ');
+            $(el).html('<p>' + newFinal + ' ... </p>');
+        });
+    })();
+    </script>
+</body>
+
+</html>

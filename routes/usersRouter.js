@@ -1,18 +1,50 @@
 var express = require('express');
+var UsersHandler = require('./userHandler').UsersHandler;
+var PostHandler = require('./postHandler').PostHandler;
+var passwordManager = require('password-hash-and-salt');
 var router = express.Router();
+var validator = require('validator');
+var moment = require('moment');
+
+var db = "";
+var userHandler = "";
+var postHandler = "";
+
+exports.setDB = function(datab) {
+    db = datab;
+    userHandler = new UsersHandler(db);
+    postHandler = new PostHandler(db);
+};
 
 /* GET users listing. */
-router.get('/', function(req, res) {
-  res.send('respond with a resource');
+router.post('/newUserEmail', function(req, res) {
+
+    var email = req.body.emailAdd;
+
+    userHandler.getUserByEmail(email, function(err, doc) {
+        if (doc) {
+            res.json({
+                isAvail: false,
+                isValid: validator.isEmail(email)
+            });
+        } else {
+            res.json({
+                isAvail: true,
+                isValid: validator.isEmail(email)
+            });
+        }
+    });
+    console.log(validator.isEmail(email));
+    console.log(email);
 });
 
-router.get('/login', function(req, res) {
-  	
-  	var username = req.body.username.toLowerCase();
-    var password = req.body.password;
-    
-    userHandler.validateUser(username, password, function(err, doc) {
+router.post('/login', function(req, res) {
+    var email = req.body.email;
+    var pass = req.body.password;
+
+    userHandler.validateUser(email, pass, function(err, doc) {
         if (doc) {
+            console.log("Correct Pass Evety");
             req.session.user = doc;
             res.redirect("/user");
         } else {
@@ -20,14 +52,141 @@ router.get('/login', function(req, res) {
             res.redirect("/");
         }
     });
+});
 
+router.get('/', function(req, res) {
+    
+    postHandler.getAllPosts(function(err, docs) {
+        if (docs) {
+            res.render('userDashboard', {
+                user: req.session.user,
+                posts: docs
 
+            });
+        } else {
+            res.render('userDashboard', {
+                user: req.session.user,
+                posts: null,
+                error: "Contents Cannot Be Retrived From Server"
+            });
+        }
+    });
 
 });
 
-router.get('/signup' , function(req, res) {
+function isUserLogged(req, res, next) {
 
+    if (req.session.user === undefined) {
+        return res.redirect('/');
+    } else {
+        next();
+    }
+}
+
+router.get('/p/:id' , isUserLogged, function(req, res) {
+
+    postHandler.getPostById(req.params.id, function(err, postR) {
+        
+        if(postR){
+            res.render('userPostView',{
+                post:postR,
+                user:req.session.user
+            });
+        }
+        else{
+            res.render('userPostView',{
+                error:"ERROR",
+                user: req.session.user
+            });
+        }
+    });
 });
 
 
-module.exports = router;
+router.get('/new', isUserLogged, function(req, res) {
+    res.render('postCreate', {
+        user: req.session.user
+    });
+});
+
+router.post('/signUpUser', function(req, res) {
+    var b = req.body;
+    passwordManager(b.password).hash(function(err, hash) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+
+        var b = req.body;
+
+        var user = {
+            _id: b.email,
+            pass: hash,
+            firstName: b.firstName,
+            lastName: b.lastName,
+            gender: b.gender,
+            location: b.location,
+            createdAt: moment().format()
+        };
+
+        userHandler.addNewUser(user, function(err) {
+            if (err) {
+                console.log("PROBLEM ADDING USER");
+                res.json({
+                    userAdded: false
+                });
+
+            } else {
+                req.session.user = user;
+                res.json({
+                    userAdded: true,
+                    redirectTo: '/user'
+                });
+            }
+
+        });
+    });
+
+});
+
+router.get('/logout' , function(req, res) {
+    console.log("In logout");
+    if (req.session.user === undefined) {
+        res.redirect("/");
+    } else {
+        delete req.session.user;
+        res.redirect("/");
+    }
+});
+
+router.post("/p/publish", isUserLogged, function(req, res) {
+    
+    var body = req.body;
+    
+    var post = {
+        title: body.title,
+        body: body.body,
+        tags: body.tags.trim().replace(/\s*(,|^|$)\s*/g, "$1").split(","),  
+        location: req.session.user.location,
+        publishedBy: {
+            email: req.session.user._id,
+            firstName: req.session.user.firstName,
+            lastName: req.session.user.lastName
+        },
+        publishedAt: moment().format(),
+        comments: [],
+    };
+
+    postHandler.submitPost(post , function(err , result) {
+        if(err){
+            throw err;
+        }
+        else{
+            res.json({
+                posted: true
+            });
+        }
+    });
+});
+
+module.exports.userrouter = router;
