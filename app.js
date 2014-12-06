@@ -12,6 +12,7 @@ var session = require('express-session');
 var routes = require('./routes/index');
 var userRouter = require('./routes/usersRouter');
 var postRouter = require('./routes/postRouter');
+var api = require('./routes/apiRestUrl');
 
 var app = express();
 
@@ -54,14 +55,13 @@ MongoClient.connect(connectionMongoLocal, function(err, db) {
             throw err;
         }
 
-        console.log("DB Connected" + db);
-
         userRouter.setDB(db);
-        
+        api.setDB(db);
         //Routing Logic and modules
         app.use('/', routes);
         app.use('/user', userRouter.userrouter);
         app.use('/posts', postRouter);
+        app.use('/api' , api.apiEndPoints);
 
 
         // catch 404 and forward to error handler

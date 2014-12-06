@@ -71,11 +71,6 @@ function UsersHandler(db) {
         });
     };
 
-
-
-
-
-
 }
 
 module.exports.UsersHandler = UsersHandler;

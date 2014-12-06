@@ -51,7 +51,7 @@ function PostHandler(db) {
 
 
     this.getPostByUser = function(email, callback) {
-    	var query = {
+        var query = {
             "publishedBy.email": email
         };
         posts.find(query).sort({
@@ -68,7 +68,7 @@ function PostHandler(db) {
     };
 
     this.getPostByTag = function(hashtag, callback) {
-    	var query = {
+        var query = {
             tags: hashtag
         };
         posts.find(query).sort({
@@ -84,17 +84,16 @@ function PostHandler(db) {
     };
 
 
-  this.getPostById = function(id, callback) {
-        
+    this.getPostById = function(id, callback) {
+
         var query = {
             _id: new require('mongodb').ObjectID(id)
         };
-        
+
         posts.findOne(query, function(err, doc) {
             if (doc) {
-            	return callback(null, doc);
-            }
-            else {
+                return callback(null, doc);
+            } else {
                 return callback(null, null)
             }
 
@@ -116,6 +115,41 @@ function PostHandler(db) {
         });
     };
 
+    this.addCommentToPost = function(id, comment, callback) {
+
+        var query = {
+            _id: new require('mongodb').ObjectID(id)
+        };
+
+        posts.update(query, {
+            $push: {
+                comments: comment
+            }
+        }, function(err, result) {
+            if (err) {
+                return callback(err, null);
+            } else {
+                console.log("Here");
+                return callback(null, result);
+            }
+        });
+    };
+
+    this.getCommentsFromPost = function(id, callback) {
+        var query = {
+            _id: new require('mongodb').ObjectID(id)
+        };
+
+        posts.findOne(query, function(err, doc) {
+            if (doc) {
+                return callback(null, doc.comments);
+            }
+            if (err) {
+                return callback(err, null);
+            }
+
+        });
+    };
 
 }
 

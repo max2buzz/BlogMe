@@ -166,7 +166,7 @@ router.post("/p/publish", isUserLogged, function(req, res) {
     var post = {
         title: body.title,
         body: body.body,
-        tags: body.tags.trim().replace(/\s*(,|^|$)\s*/g, "$1").split(","),  
+        tags: body.tags.trim().replace(/\s*(,|^|$)\s*/g, "$1").split(","),
         location: req.session.user.location,
         publishedBy: {
             email: req.session.user._id,
@@ -178,12 +178,14 @@ router.post("/p/publish", isUserLogged, function(req, res) {
     };
 
     postHandler.submitPost(post , function(err , result) {
-        if(err){
-            throw err;
-        }
-        else{
+        if(result){
             res.json({
                 posted: true
+            });
+        }
+        else{
+           res.json({
+                posted: false
             });
         }
     });
