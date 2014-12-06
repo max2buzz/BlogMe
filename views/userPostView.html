@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="/css/normalize.css">
     <link rel="stylesheet" href="/css/foundation.min.css">
     <link href="/css/toastr.min.css" rel="stylesheet" />
-
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,500' rel='stylesheet' type='text/css'>
     <style>
         body{
             background-color: #EDECE4;
             color: #242628;
+            font-family: 'Roboto', sans-serif;
         }
         .holder{
             background-color: #FEFEFE;
@@ -111,7 +112,7 @@
                 <div class="tags">
                     <h5>Tags: 
                         {% for tag in post.tags %}    
-                            <a href="#">#{{tag}} </a>
+                            <a href="/user/p/tag/{{tag.trim()}}">#{{tag}} </a>
                         {% endfor %}
                      </h5>
                 </div>

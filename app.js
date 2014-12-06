@@ -54,7 +54,7 @@ MongoClient.connect(connectionMongoLocal, function(err, db) {
             console.log("ERROR Connecting to Database");
             throw err;
         }
-
+        console.log("DB Connected");
         userRouter.setDB(db);
         api.setDB(db);
         //Routing Logic and modules

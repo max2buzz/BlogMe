@@ -102,6 +102,27 @@ router.get('/p/:id' , isUserLogged, function(req, res) {
     });
 });
 
+router.get('/p/tag/:tag', isUserLogged , function(req, res) {
+    var tag = req.params.tag;
+    console.log(tag);
+    postHandler.getPostByTag(tag, function(err, docs) {
+        if (docs) {
+            res.render('postHashView', {
+                user: req.session.user,
+                posts: docs,
+                hash:tag
+            });
+        } else {
+            res.render('postHashView', {
+                user: req.session.user,
+                posts: null,
+                hash:tag,
+                error: "Contents Cannot Be Retrived From Server"
+            });
+        }
+    });
+});
+
 
 router.get('/new', isUserLogged, function(req, res) {
     res.render('postCreate', {
@@ -166,7 +187,7 @@ router.post("/p/publish", isUserLogged, function(req, res) {
     var post = {
         title: body.title,
         body: body.body,
-        tags: body.tags.trim().replace(/\s*(,|^|$)\s*/g, "$1").split(","),
+        tags: body.tags.trim().toUpperCase().replace(/\s*(,|^|$)\s*/g, "$1").split(","),
         location: req.session.user.location,
         publishedBy: {
             email: req.session.user._id,

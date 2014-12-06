@@ -151,6 +151,22 @@ function PostHandler(db) {
         });
     };
 
+    this.getPostCount = function(callback) {
+        console.log("Here");
+        posts.count({}, function(err, count) {
+            if (err) {
+                return callback(err, null);
+            }
+            else{
+                return callback(null, count);
+            }
+
+        });
+
+    };
+
+    
+
 }
 
 module.exports.PostHandler = PostHandler;

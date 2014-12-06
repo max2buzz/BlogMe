@@ -13,11 +13,43 @@ exports.setDB = function(datab) {
     postHandler = new PostHandler(db);
 };
 
-
+//api/
 router.get('/', function(req, res) {
     //Generic Endpoint
     res.json({
         version: "1.0"
+    });
+});
+
+//api/p
+router.get('/p', function(req, res) {
+    postHandler.getAllPosts(function(err, docs) {
+        if (docs) {
+            res.json({
+                posts: docs
+            });
+        } else {
+            res.status(400).json({
+                posts: null,
+                error: "Contents Cannot Be Retrived From Server"
+            });
+        }
+    });
+});
+
+router.get('/p/tag/:tag', function(req, res) {
+    var tag = req.params.tag;
+    postHandler.getPostByTag(tag, function(err, docs) {
+        if (docs) {
+            res.json({
+                posts: docs
+            });
+        } else {
+            res.status(400).json({
+                posts: null,
+                error: "Contents Cannot Be Retrived From Server"
+            });
+        }
     });
 });
 
@@ -50,14 +82,24 @@ router.get('/p/:id/comments', function(req, res) {
     });
 });
 
-router.get('stat/count/post', function(req, res) {
+router.get('/stat/count/post', function(req, res) {
     //End Point to get Number of Posts
-
-
+    console.log("Here in count");
+    postHandler.getPostCount(function(err, countN) {
+        if (err) {
+            res.json(500, {
+                error: "Cannot Fetch Post Counts"
+            });
+        } else {
+            res.json({
+                count: countN
+            });
+        }
+    });
 });
 
 
-router.get('stat/count/user', function(req, res) {
+router.get('/stat/count/user', function(req, res) {
     //End Point to get Number of Posts
 
 
