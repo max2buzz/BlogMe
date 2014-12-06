@@ -152,12 +152,11 @@ function PostHandler(db) {
     };
 
     this.getPostCount = function(callback) {
-        console.log("Here");
+
         posts.count({}, function(err, count) {
             if (err) {
                 return callback(err, null);
-            }
-            else{
+            } else {
                 return callback(null, count);
             }
 
@@ -165,7 +164,25 @@ function PostHandler(db) {
 
     };
 
-    
+
+    this.getPostByTitle = function(queryS, callback) {
+
+        var query = {
+            title: new RegExp(queryS, "i")
+        };
+        console.log(query);
+        posts.find(query).sort({
+            publishedAt: -1
+        }).toArray(function(err, docs) {
+            if (err) {
+                return callback(err, null);
+            } else {
+                return callback(null, docs);
+            }
+
+        });
+    };
+
 
 }
 

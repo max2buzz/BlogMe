@@ -82,6 +82,11 @@ function isUserLogged(req, res, next) {
         next();
     }
 }
+router.get("/p/search", isUserLogged, function(req, res) {
+    res.render('blogSearchView',{
+        user:req.session.user
+    });
+});
 
 router.get('/p/:id' , isUserLogged, function(req, res) {
 
@@ -178,6 +183,12 @@ router.get('/logout' , function(req, res) {
         delete req.session.user;
         res.redirect("/");
     }
+});
+
+router.get("/p/search", isUserLogged, function(req, res) {
+    res.render('blogSearchView' , {
+        user:req.session.user
+    });
 });
 
 router.post("/p/publish", isUserLogged, function(req, res) {

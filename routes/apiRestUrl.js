@@ -37,12 +37,29 @@ router.get('/p', function(req, res) {
     });
 });
 
+router.get('/search/p/q=:query' , function(req, res) {
+    var titleString = req.params.query;
+    postHandler.getPostByTitle(titleString, function(err, postsR) {
+        if (err) {
+            res.json({
+                error:"Cannot Fetch Posts"
+            });
+        } else{
+            res.json({
+                posts:postsR
+            });
+        }
+    });
+});
+
+
 router.get('/p/tag/:tag', function(req, res) {
     var tag = req.params.tag;
     postHandler.getPostByTag(tag, function(err, docs) {
         if (docs) {
             res.json({
-                posts: docs
+                posts: docs,
+                count: docs.length
             });
         } else {
             res.status(400).json({
