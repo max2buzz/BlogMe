@@ -53,6 +53,7 @@ body {
 .postBox{
     border-bottom: #d0e2ea 1px dashed;
     margin-top:0.5rem;
+    padding-bottom: 10px;
 
 }
 
@@ -186,7 +187,7 @@ a.userEmail:hover{
                             postId: data._id,
                             title: data.title,
                             userId: data.publishedBy.email,
-                            postPublishedAt: moment(data.publishedAt.toString(), "DD-MMM-YYYY"),
+                            postPublishedAt: moment(data.publishedAt.toString(), "DD-MMM-YYYY").format(),
                             publisherFirstName: data.publishedBy.firstName,
                             publisherLastName: data.publishedBy.lastName,
                             commentLength: data.comments.length,

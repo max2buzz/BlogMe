@@ -55,7 +55,7 @@ router.post('/login', function(req, res) {
 });
 
 router.get('/', function(req, res) {
-    
+
     postHandler.getAllPosts(function(err, docs) {
         if (docs) {
             res.render('userDashboard', {
@@ -82,32 +82,53 @@ function isUserLogged(req, res, next) {
         next();
     }
 }
+
+
+router('/edit/p/:id', isUserLogged, function(req, res) {
+
+    var id = req.params.id;
+    postHandler.getPostById(id, function(err, postR) {
+        if (err) {
+
+        } else {
+            if (postR.publishedBy.email === req.session._id) {
+                res.render('blogModify', {
+                    post:postR,
+                    user:req.session.user
+                });
+            } else {
+                
+            }
+        }
+    });
+
+});
+
 router.get("/p/search", isUserLogged, function(req, res) {
-    res.render('blogSearchView',{
-        user:req.session.user
+    res.render('blogSearchView', {
+        user: req.session.user
     });
 });
 
-router.get('/p/:id' , isUserLogged, function(req, res) {
+router.get('/p/:id', isUserLogged, function(req, res) {
 
     postHandler.getPostById(req.params.id, function(err, postR) {
-        
-        if(postR){
-            res.render('userPostView',{
-                post:postR,
-                user:req.session.user
+
+        if (postR) {
+            res.render('userPostView', {
+                post: postR,
+                user: req.session.user
             });
-        }
-        else{
-            res.render('userPostView',{
-                error:"ERROR",
+        } else {
+            res.render('userPostView', {
+                error: "ERROR",
                 user: req.session.user
             });
         }
     });
 });
 
-router.get('/p/tag/:tag', isUserLogged , function(req, res) {
+router.get('/p/tag/:tag', isUserLogged, function(req, res) {
     var tag = req.params.tag;
     console.log(tag);
     postHandler.getPostByTag(tag, function(err, docs) {
@@ -115,13 +136,13 @@ router.get('/p/tag/:tag', isUserLogged , function(req, res) {
             res.render('postHashView', {
                 user: req.session.user,
                 posts: docs,
-                hash:tag
+                hash: tag
             });
         } else {
             res.render('postHashView', {
                 user: req.session.user,
                 posts: null,
-                hash:tag,
+                hash: tag,
                 error: "Contents Cannot Be Retrived From Server"
             });
         }
@@ -175,7 +196,7 @@ router.post('/signUpUser', function(req, res) {
 
 });
 
-router.get('/logout' , function(req, res) {
+router.get('/logout', function(req, res) {
     console.log("In logout");
     if (req.session.user === undefined) {
         res.redirect("/");
@@ -186,15 +207,15 @@ router.get('/logout' , function(req, res) {
 });
 
 router.get("/p/search", isUserLogged, function(req, res) {
-    res.render('blogSearchView' , {
-        user:req.session.user
+    res.render('blogSearchView', {
+        user: req.session.user
     });
 });
 
 router.post("/p/publish", isUserLogged, function(req, res) {
-    
+
     var body = req.body;
-    
+
     var post = {
         title: body.title,
         body: body.body,
@@ -209,14 +230,13 @@ router.post("/p/publish", isUserLogged, function(req, res) {
         comments: [],
     };
 
-    postHandler.submitPost(post , function(err , result) {
-        if(result){
+    postHandler.submitPost(post, function(err, result) {
+        if (result) {
             res.json({
                 posted: true
             });
-        }
-        else{
-           res.json({
+        } else {
+            res.json({
                 posted: false
             });
         }
