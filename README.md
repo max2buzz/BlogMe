@@ -1,6 +1,6 @@
-1.Install node.js
+1.Install node.js (MongoDB hosted on amazon ECS, so no installation required)
 
-2.To run the project, from prject directory execute following command
+2.To run the project, from project directory execute following command
 
 npm start
 
