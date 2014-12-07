@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
-<html class="no-js" lang="en" >
+<html class="no-js" lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> {{user.FirstName}} | Dashboard </title>
+    <title> {{user.firstName}} | Dashboard </title>
     <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/css/normalize.css">
     <link rel="stylesheet" href="/css/foundation.min.css">
-    <link href="/css/toastr.min.css" rel="stylesheet"/>
-    <link href="/css/toastr.min.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="/css/postCreateS.css">  
+    <link href="/css/toastr.min.css" rel="stylesheet" />
+    <link href="/css/toastr.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/postCreateS.css">
 </head>
-    
+
 <body>
     <nav class="top-bar " data-topbar>
         <ul class="title-area">
@@ -28,12 +29,12 @@
                     <span>Menu</span>
                 </a>
             </li>
-		</ul>
+        </ul>
         <section class="top-bar-section">
             <!-- Right Nav Section -->
             <ul class="right">
                 <li>
-                    <a href="/user/posts">My Posts</a>
+                    <a href="/user/">My Posts</a>
                 </li>
                 <li>
                     <a href="/publisher/{{publisher}}">{{publisher}}</a>
@@ -43,82 +44,84 @@
                 </li>
 
             </ul>
-		</section>
+        </section>
     </nav>
-   
-    <div class="main  clearfix">    
+
+    <div class="main  clearfix">
         <div class="title columns large-12 small-12 medium-12">
             <input type="text" id="titleText" name="title" placeholder="Your Post Title" value="{{post.title}}">
         </div>
-        
+
         <div class="type columns large-6">
             <small>TYPE YOUR BLOG</small>
-            <div class="inz"><textarea name="inputMark" id="text-input" cols="70" rows="10">
-                {{post.body}}
-            </textarea></div>
+            <div class="inz">
+                <textarea name="inputMark" id="text-input" cols="70" rows="10">
+                    {{post.body.trim()}}
+                </textarea>
+            </div>
         </div>
         <div class="preview columns large-6">
             <small>RENDERED HTML</small>
             <div class="render">
-                  {{post.body}}    
+                {{post.body}}
             </div>
         </div>
     </div>
     <div class="row lastCol">
-    <div class="large-4  columns">
-      <label>Tags
-        <input type="text" name="tags" placeholder="Tags Comma Seperated Please">        
-      </label>
-    </div>
-    
-    <div class="large-4 columns">
-      <button id="postSubmit">MODIFY</button>
-    </div>
-    <script src="/js/vendor/jquery.js"></script>
-    <script src="/js/foundation.min.js"></script>
-    <script src="/js/foundation/foundation.reveal.js"></script>
-    <script src="/js/toastr.min.js"></script>
-    <script>
-        $(document).foundation();
-    </script>
-    
-    <script>
-    (function() {
-    $("#text-input").on('input', function(){
-        var value = $("#text-input").val();
-        $(".render").html(value);    
-    });
-    })();
-    </script>
-    <script>
+        <div class="large-4  columns">
+            <label>Tags
+                <input type="text" name="tags" placeholder="Tags Comma Seperated Please" value="{{post.tags.join(',')}}">
+            </label>
+        </div>
 
-    (function() {
-    // $('#postSubmit').on('click', function() {
-    //     if ($("#text-input").val()==="" || $('input[name="title"]').val()=="") {
-    //         toastr.error("","Title / Body is required");
-    //     }
-    //     else{
-    //         var formdata ={
-    //               title: $('input[name="title"]').val(),
-    //               body: $("#text-input").val(),
-    //               tags: $('input[name="tags"]').val()
-    //           }
-    //             $('.mybut').attr("disabled","disabled");  
-    //             $.post("/user/p/publish",formdata, function(data) {
-    //                 if(data.posted){
-    //                     window.location="/user";
-    //                 }
-    //                 else{
-    //                     $('.mybut').removeAttr("disabled");
-    //                     toastr.error("","Sorry. Something Went Wrong, Coudnt Publish");
-    //                 }
-    //             });
-    //     }
-    // });    
-    // })();
-    </script>
-    <script>
+        <div class="large-4 columns">
+            <button id="postSubmit">MODIFY</button>
+        </div>
+        <script src="/js/vendor/jquery.js"></script>
+        <script src="/js/foundation.min.js"></script>
+        <script src="/js/foundation/foundation.reveal.js"></script>
+        <script src="/js/toastr.min.js"></script>
+        <script>
         $(document).foundation();
-    </script>
+        </script>
+
+        <script>
+        (function() {
+            $("#text-input").on('input', function() {
+                var value = $("#text-input").val();
+                $(".render").html(value);
+            });
+        })();
+        </script>
+        <script>
+        (function() {
+            var loc = window.location.href;
+            var id = loc.substring(loc.lastIndexOf('/') + 1, loc.length);
+            $('#postSubmit').on('click', function() {
+                if ($("#text-input").val() === "" || $('input[name="title"]').val() == "") {
+                    toastr.error("", "Title / Body is required");
+                } else {
+                    var formdata = {
+                        title: $('input[name="title"]').val(),
+                        body: $("#text-input").val(),
+                        tags: $('input[name="tags"]').val()
+                    }
+                    $('.mybut').attr("disabled", "disabled");
+                    $.post("/user/modify/p/" + id, formdata, function(data) {
+                        if (data.modified) {
+                            window.location = "/user/p/" + data.id;
+                        } else {
+                            $('.mybut').removeAttr("disabled");
+                            toastr.error("", "Sorry. Something Went Wrong, Coudnt Publish");
+                        }
+                    });
+                }
+            });
+        })();
+        </script>
+        <script>
+         $(document).foundation();
+        </script>
 </body>
+
 </html>

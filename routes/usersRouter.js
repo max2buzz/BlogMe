@@ -84,21 +84,29 @@ function isUserLogged(req, res, next) {
 }
 
 
-router('/edit/p/:id', isUserLogged, function(req, res) {
+router.get('/edit/p/:id', isUserLogged, function(req, res) {
 
     var id = req.params.id;
-    postHandler.getPostById(id, function(err, postR) {
-        if (err) {
+    console.log("EDITING " + id);
 
-        } else {
-            if (postR.publishedBy.email === req.session._id) {
+    postHandler.getPostById(req.params.id, function(err, postR) {
+
+        if (postR) {
+            if (req.session.user._id === postR.publishedBy.email) {
+                console.log("My Post");
                 res.render('blogModify', {
-                    post:postR,
-                    user:req.session.user
+                    post: postR,
+                    user: req.session.user
                 });
             } else {
-                
+                res.redirect('/user');
             }
+
+        } else {
+            res.render('blogModify', {
+                error: "ERROR",
+                user: req.session.user
+            });
         }
     });
 
@@ -115,10 +123,21 @@ router.get('/p/:id', isUserLogged, function(req, res) {
     postHandler.getPostById(req.params.id, function(err, postR) {
 
         if (postR) {
-            res.render('userPostView', {
-                post: postR,
-                user: req.session.user
-            });
+            if (req.session.user._id === postR.publishedBy.email) {
+                res.render('userPostView', {
+                    post: postR,
+                    user: req.session.user,
+                    myPost: true
+                });
+            }
+            else{
+                res.render('userPostView', {
+                    post: postR,
+                    user: req.session.user,
+                    myPost: false
+                });
+            }
+
         } else {
             res.render('userPostView', {
                 error: "ERROR",
@@ -158,7 +177,7 @@ router.get('/new', isUserLogged, function(req, res) {
 
 router.post('/signUpUser', function(req, res) {
     var b = req.body;
-    passwordManager(b.password).hash(function(err, hash) {
+    passwordManager(b.password.trim()).hash(function(err, hash) {
         if (err) {
             console.log(err);
             throw err;
@@ -167,10 +186,10 @@ router.post('/signUpUser', function(req, res) {
         var b = req.body;
 
         var user = {
-            _id: b.email,
+            _id: b.email.trim(),
             pass: hash,
-            firstName: b.firstName,
-            lastName: b.lastName,
+            firstName: b.firstName.trim(),
+            lastName: b.lastName.trim(),
             gender: b.gender,
             location: b.location,
             createdAt: moment().format()
@@ -217,8 +236,8 @@ router.post("/p/publish", isUserLogged, function(req, res) {
     var body = req.body;
 
     var post = {
-        title: body.title,
-        body: body.body,
+        title: body.title.trim(),
+        body: body.body.trim(),
         tags: body.tags.trim().toUpperCase().replace(/\s*(,|^|$)\s*/g, "$1").split(","),
         location: req.session.user.location,
         publishedBy: {
@@ -241,6 +260,31 @@ router.post("/p/publish", isUserLogged, function(req, res) {
             });
         }
     });
+});
+
+router.post("/modify/p/:id", function(req, res) {
+    var b = req.body;
+    console.log(b);
+    var edit = {
+        newBody: b.body.trim(),
+        newTitle: b.title.trim(),
+        newTags: b.tags.trim().toUpperCase().replace(/\s*(,|^|$)\s*/g, "$1").split(",")
+    };
+    console.log(edit);
+    postHandler.updatePost(req.params.id, edit, function(err, result) {
+        if (err) {
+            throw err;
+
+        } else {
+            res.json({
+                modified: true,
+                id: req.params.id
+
+            });
+        }
+
+    });
+
 });
 
 module.exports.userrouter = router;

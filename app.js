@@ -40,15 +40,19 @@ app.use(session({
 }));
 
 
+var portT = 3000;
+console.log(process.argv[2]);
+if(process.argv[2]){
+    portT= process.argv[2];
+}
 
-
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || portT);
 
 
 var connectionMongoLocal = 'mongodb://localhost:27017/BlogMe';
 var connectionMongoLab = 'mongodb://omkar1111:omkar1111@ds061360.mongolab.com:61360/blogme';
 
-MongoClient.connect(connectionMongoLab, function(err, db) {
+MongoClient.connect(connectionMongoLocal, function(err, db) {
 
         if (err) {
             console.log("ERROR Connecting to Database");

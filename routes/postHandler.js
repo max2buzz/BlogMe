@@ -94,7 +94,10 @@ function PostHandler(db) {
             if (doc) {
                 return callback(null, doc);
             } else {
-                return callback(null, null)
+                if(err){
+                    return callback(err, null);
+                }
+               
             }
 
         });
@@ -181,6 +184,30 @@ function PostHandler(db) {
             }
 
         });
+    };
+
+    
+    this.updatePost= function(id , edit , callback){
+
+        var query = {
+            _id: new require('mongodb').ObjectID(id)
+        };
+        
+        posts.update(query, {
+            $set: {
+                body: edit.newBody,
+                title: edit.newTitle,
+                tags: edit.newTags
+            }
+        }, function(err, result) {
+
+            if (err) {
+                return callback(err, null);
+            } else {
+                return callback(null, result);
+            }
+        });
+
     };
 
 

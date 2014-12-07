@@ -107,6 +107,7 @@
                 <h2 class="title">{{post.title|title}}</h2>
                 <div class="meta">
                     By <a href="/user/{{post.publishedBy.email}}" class="userEmail">{{post.publishedBy.firstName}} {{post.publishedBy.lastName}}</a> • <span class="datePublished">{{post.publishedAt|date('d M Y')}}</span>
+                    {% if myPost %} • <a href="/user/edit/p/{{post._id.toString()}}">Edit</a> {% endif %}
                 </div>
 
                 <div class="tags">
