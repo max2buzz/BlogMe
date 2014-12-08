@@ -41,9 +41,11 @@ app.use(session({
 
 
 var portT = 3000;
-console.log(process.argv[2]);
 if(process.argv[2]){
     portT= process.argv[2];
+}
+else{
+    console.log("No Port Specified App Will Run on Port 3000");
 }
 
 app.set('port', process.env.PORT || portT);
