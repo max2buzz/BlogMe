@@ -16,6 +16,24 @@ exports.setDB = function(datab) {
     postHandler = new PostHandler(db);
 };
 
+var mc = require('mc');
+
+var client = new mc.Client(['pub-memcache-12670.us-east-1-4.4.ec2.garantiadata.com:12670', 'pub-memcache-19547.us-east-1-4.4.ec2.garantiadata.com:19547'], mc.Adapter.json, mc.Strategy.hash);
+client.connect(function() {
+    // client.set('{a:"b"}', '{"a":"myVal"}', {
+    //     flags: 0,
+    //     exptime: 0
+    // }, function(err, status) {
+    //     if (!err) {
+    //         console.log(status); // 'STORED' on success!
+    //     } else {
+    //         console.log(err);
+    //     }
+    // });
+});
+
+
+
 /* GET users listing. */
 router.post('/newUserEmail', function(req, res) {
 
@@ -34,8 +52,7 @@ router.post('/newUserEmail', function(req, res) {
             });
         }
     });
-    console.log(validator.isEmail(email));
-    console.log(email);
+
 });
 
 router.post('/login', function(req, res) {
@@ -44,7 +61,6 @@ router.post('/login', function(req, res) {
 
     userHandler.validateUser(email, pass, function(err, doc) {
         if (doc) {
-            console.log("Correct Pass Evety");
             req.session.user = doc;
             res.redirect("/user");
         } else {
@@ -87,13 +103,12 @@ function isUserLogged(req, res, next) {
 router.get('/edit/p/:id', isUserLogged, function(req, res) {
 
     var id = req.params.id;
-    console.log("EDITING " + id);
+
 
     postHandler.getPostById(req.params.id, function(err, postR) {
 
         if (postR) {
             if (req.session.user._id === postR.publishedBy.email) {
-                console.log("My Post");
                 res.render('blogModify', {
                     post: postR,
                     user: req.session.user
@@ -118,38 +133,93 @@ router.get("/p/search", isUserLogged, function(req, res) {
     });
 });
 
-router.get('/p/:id', isUserLogged, function(req, res) {
-
-    postHandler.getPostById(req.params.id, function(err, postR) {
-
-        if (postR) {
-            if (req.session.user._id === postR.publishedBy.email) {
-                res.render('userPostView', {
-                    post: postR,
-                    user: req.session.user,
-                    myPost: true
-                });
-            }
-            else{
-                res.render('userPostView', {
-                    post: postR,
-                    user: req.session.user,
-                    myPost: false
-                });
-            }
-
+router.get('/loc/p/:location', isUserLogged, function(req, res) {
+    var loc = req.params.location;
+    postHandler.getPostByLocation(loc, function(err, docs) {
+        if (docs) {
+            res.render('postLocationView', {
+                user: req.session.user,
+                posts: docs,
+                userLoc: loc
+            });
         } else {
-            res.render('userPostView', {
-                error: "ERROR",
-                user: req.session.user
+            res.render('postLocationView', {
+                user: req.session.user,
+                posts: null,
+                userLoc: loc,
+                error: "Contents Cannot Be Retrived From Server"
             });
         }
     });
 });
 
+router.get('/p/:id', isUserLogged, function(req, res) {
+
+
+    client.get(req.params.id, function(err, response) {
+        if (!err) {
+            var cachedPost = response[req.params.id];
+            console.log("Cache Hit");
+            if (req.session.user._id === cachedPost.publishedBy.email) {
+                res.render('userPostView', {
+                    post: cachedPost,
+                    user: req.session.user,
+                    myPost: true,
+                    fromCache: true
+                });
+            } else {
+                res.render('userPostView', {
+                    post: cachedPost,
+                    user: req.session.user,
+                    myPost: false,
+                    fromCache: true
+                });
+            }
+        } else {
+            postHandler.getPostById(req.params.id, function(err, postR) {
+                if (postR) {
+                    delete postR.comments;
+                    client.set(req.params.id, JSON.stringify(postR), {
+                        flags: 0,
+                        exptime: 60
+                    }, function(err, status) {
+                        if (!err) {
+                            console.log("Cache Miss Storing Post " + postR.title + " in cache"); // 'STORED' on success!
+                        } else {
+                            console.log(err);
+                        }
+                    });
+                    if (req.session.user._id === postR.publishedBy.email) {
+                        res.render('userPostView', {
+                            post: postR,
+                            user: req.session.user,
+                            myPost: true,
+                            fromCache: false
+                        });
+                    } else {
+                        res.render('userPostView', {
+                            post: postR,
+                            user: req.session.user,
+                            myPost: false,
+                            fromCache: false
+                        });
+                    }
+
+                } else {
+                    res.render('userPostView', {
+                        error: "ERROR",
+                        user: req.session.user
+                    });
+                }
+            });
+        }
+    });
+
+
+});
+
 router.get('/p/tag/:tag', isUserLogged, function(req, res) {
     var tag = req.params.tag;
-    console.log(tag);
     postHandler.getPostByTag(tag, function(err, docs) {
         if (docs) {
             res.render('postHashView', {
@@ -167,6 +237,8 @@ router.get('/p/tag/:tag', isUserLogged, function(req, res) {
         }
     });
 });
+
+
 
 
 router.get('/new', isUserLogged, function(req, res) {
@@ -264,23 +336,34 @@ router.post("/p/publish", isUserLogged, function(req, res) {
 
 router.post("/modify/p/:id", function(req, res) {
     var b = req.body;
-    console.log(b);
     var edit = {
         newBody: b.body.trim(),
         newTitle: b.title.trim(),
         newTags: b.tags.trim().toUpperCase().replace(/\s*(,|^|$)\s*/g, "$1").split(",")
     };
-    console.log(edit);
+
     postHandler.updatePost(req.params.id, edit, function(err, result) {
         if (err) {
             throw err;
 
         } else {
-            res.json({
-                modified: true,
-                id: req.params.id
-
+            postHandler.getPostById(req.params.id, function(err, postR) {
+                client.set(req.params.id, JSON.stringify(postR), {
+                    flags: 0,
+                    exptime: 60
+                }, function(err, status) {
+                    if (!err) {
+                        console.log("Cache Miss Storing Post " + postR.title + " in cache");
+                    } else {
+                        console.log(err);
+                    }
+                });
+                res.json({
+                    modified: true,
+                    id: req.params.id
+                });
             });
+
         }
 
     });

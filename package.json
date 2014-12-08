@@ -22,6 +22,7 @@
     "express-session": "~1.9.3",
     "password-hash-and-salt": "~0.1.2",
     "validator": "~3.22.1",
-    "bcrypt-nodejs": "0.0.3"
+    "bcrypt-nodejs": "0.0.3",
+    "mc": "~1.0.6"
   }
 }

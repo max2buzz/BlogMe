@@ -44,6 +44,10 @@
             text-decoration: underline;
         }
 
+        .render{
+            white-space: pre-line;
+        }
+
         .render p{
             font-size: 1.4rem;
             line-height: 1.2em;
@@ -55,6 +59,11 @@
 
         .postBox{
             border-bottom: #d0e2ea 1px dashed;
+        }
+
+        .cachedRes{
+            margin:10px 0px;
+            color: blue;
         }
     </style>
 </head>
@@ -119,6 +128,7 @@
                 </div>
 
                 <div class="render">{{post.body}}</div>
+                <div class="cachedRes">{% if fromCache %}Cached Response{% endif %}</div>
                 <div class="commentsSec">
                     <h4>Comments <small class="numberComments"></small></h4>
                     <div class="large-6 postCommentArea">
@@ -150,6 +160,7 @@
     </script>
     <script>
     (function() {
+
 
         var loc = window.location.href;
         var id = loc.substring(loc.lastIndexOf('/') + 1, loc.length);

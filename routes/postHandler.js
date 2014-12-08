@@ -22,7 +22,7 @@ function PostHandler(db) {
 
     this.getPostByLocation = function(userloc, callback) {
         var query = {
-            location: userloc
+            location: userloc.trim()
         };
         posts.find(query).sort({
             publishedAt: -1
