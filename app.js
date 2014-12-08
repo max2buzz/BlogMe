@@ -13,8 +13,22 @@ var routes = require('./routes/index');
 var userRouter = require('./routes/usersRouter');
 var postRouter = require('./routes/postRouter');
 var api = require('./routes/apiRestUrl');
-
+var https = require('https');
+var http = require('http');
+var fs = require('fs');
+var compress = require('compression');
 var app = express();
+
+
+
+
+var options = {
+    key: fs.readFileSync('mysite.key'),
+    cert: fs.readFileSync('mysite.crt')
+};
+
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -33,18 +47,19 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 60000 }
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        maxAge: 60000
+    }
 }));
 
 
 var portT = 3000;
-if(process.argv[2]){
-    portT= process.argv[2];
-}
-else{
+if (process.argv[2]) {
+    portT = process.argv[2];
+} else {
     console.log("No Port Specified App Will Run on Port 3000");
 }
 
@@ -56,55 +71,58 @@ var connectionMongoLab = 'mongodb://omkar1111:omkar1111@ds061360.mongolab.com:61
 
 MongoClient.connect(connectionMongoLocal, function(err, db) {
 
-        if (err) {
-            console.log("ERROR Connecting to Database");
-            throw err;
-        }
-        console.log("DB Connected");
-        userRouter.setDB(db);
-        api.setDB(db);
-        //Routing Logic and modules
-        app.use('/', routes);
-        app.use('/user', userRouter.userrouter);
-        app.use('/posts', postRouter);
-        app.use('/api' , api.apiEndPoints);
+    if (err) {
+        console.log("ERROR Connecting to Database");
+        throw err;
+    }
+    console.log("DB Connected");
+    userRouter.setDB(db);
+    api.setDB(db);
+    //Routing Logic and modules
+    app.use('/', routes);
+    app.use('/user', userRouter.userrouter);
+    app.use('/posts', postRouter);
+    app.use('/api', api.apiEndPoints);
 
 
-        // catch 404 and forward to error handler
-        app.use(function(req, res, next) {
-            var err = new Error('Not Found');
-            err.status = 404;
-            next(err);
-        });
+    // catch 404 and forward to error handler
+    app.use(function(req, res, next) {
+        var err = new Error('Not Found');
+        err.status = 404;
+        next(err);
+    });
 
-        // error handlers
+    // error handlers
 
-        // development error handler
-        // will print stacktrace
-        if (app.get('env') === 'development') {
-            app.use(function(err, req, res, next) {
-                res.status(err.status || 500);
-                res.render('error', {
-                    message: err.message,
-                    error: err
-                });
-            });
-        }
-
-        // production error handler
-        // no stacktraces leaked to user
+    // development error handler
+    // will print stacktrace
+    if (app.get('env') === 'development') {
         app.use(function(err, req, res, next) {
             res.status(err.status || 500);
             res.render('error', {
                 message: err.message,
-                error: {}
+                error: err
             });
         });
+    }
+
+    // production error handler
+    // no stacktraces leaked to user
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: {}
+        });
+    });
 
 
-        var server = app.listen(app.get('port'), function() {
-            debug('Express server listening on port ' + server.address().port);
-            console.log('Express server listening on port ' + server.address().port);
-        });    
-        
+    // var server = app.listen(app.get('port'), function() {
+    //     debug('Express server listening on port ' + server.address().port);
+    //     console.log('Express server listening on port ' + server.address().port);
+    // });
+
+    http.createServer(app).listen(3000);
+    https.createServer(options, app).listen(3001);
+
 });
