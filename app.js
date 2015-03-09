@@ -20,15 +20,10 @@ var compress = require('compression');
 var app = express();
 
 
-
-
 var options = {
     key: fs.readFileSync('mysite.key'),
     cert: fs.readFileSync('mysite.crt')
 };
-
-
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -69,7 +64,7 @@ app.set('port', process.env.PORT || portT);
 var connectionMongoLocal = 'mongodb://localhost:27017/BlogMe';
 var connectionMongoLab = 'mongodb://omkar1111:omkar1111@ds061360.mongolab.com:61360/blogme';
 
-MongoClient.connect(connectionMongoLocal, function(err, db) {
+MongoClient.connect(connectionMongoLab, function(err, db) {
 
     if (err) {
         console.log("ERROR Connecting to Database");
